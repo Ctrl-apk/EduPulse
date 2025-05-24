@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
+
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -22,34 +23,24 @@ const Chatbot = () => {
     setLoading(true);
 
     try {
-      // Format messages for Perplexity API
-      const apiMessages = [
-        ...messages.map((msg) => ({
-          role: msg.from === "user" ? "user" : "assistant",
-          content: msg.text,
-        })),
-        { role: "user", content: input },
-      ];
-
-      const response = await fetch("https://api.perplexity.ai/chat/completions", {
+      const response = await fetch("http://localhost:5000/api/chatbot", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.PERPLEXITY_API_KEY}`,
         },
-        body: JSON.stringify({
-          model: "sonar-pro",
-          messages: apiMessages,
-        }),
+        body: JSON.stringify({ message: input }),
       });
 
       const data = await response.json();
-      const botText = data.choices?.[0]?.message?.content || "Sorry, I didn't get that.";
+      const botText = data.reply || "Sorry, I didn't get that.";
 
       setMessages((prev) => [...prev, { from: "bot", text: botText }]);
     } catch (error) {
       console.error("Error fetching bot reply:", error);
-      setMessages((prev) => [...prev, { from: "bot", text: "Oops! Something went wrong." }]);
+      setMessages((prev) => [
+        ...prev,
+        { from: "bot", text: "Oops! Something went wrong." },
+      ]);
     } finally {
       setLoading(false);
     }

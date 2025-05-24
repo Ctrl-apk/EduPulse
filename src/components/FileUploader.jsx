@@ -1,56 +1,71 @@
 import React, { useState } from "react";
-import { extractTextFromPdf } from "../utils/pdfParser";
 
-function FileUploader({ onFileContent }) {
-  const [error, setError] = useState(null);
-  const [fileName, setFileName] = useState("");
+const FileUploader = ({ onUploadSuccess, onUploadError }) => {
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const handleFileChange = async (e) => {
-    setError(null);
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+    setMessage("");
+  };
 
-    setFileName(file.name);
-
-    if (!["application/pdf", "text/plain"].includes(file.type)) {
-      setError("Only PDF or plain text files are supported.");
+  const handleUpload = async () => {
+    if (!file) {
+      setMessage("Please select a PDF file to upload.");
       return;
     }
+
+    setUploading(true);
+    setMessage("");
+
+    const formData = new FormData();
+    formData.append("pdf", file);
+
     try {
-      if (file.type === "text/plain") {
-        const text = await file.text;
-        onFileContent(text);
-      } else if (file.type === "application/pdf") {
-        const text = await extractTextFromPdf(file);
-        onFileContent(text);
+      const response = await fetch("http://localhost:5000/api/upload/upload-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setMessage("Upload successful!");
+
+      if (onUploadSuccess) {
+        onUploadSuccess(data);
       }
     } catch (error) {
-      setError("Error reading file...");
-      console.error(error);
+      setMessage(`Error: ${error.message}`);
+      if (onUploadError) {
+        onUploadError(error);
+      }
+    } finally {
+      setUploading(false);
     }
   };
+
   return (
-    <div className="p-4 border border-gray-300 rounded-md max-w-md mx-auto">
-      <label htmlFor="file-upload" className="block mb-2 font-medium">
-        Upload Lecture Notes (PDF or Text)
-      </label>
+    <div className="mb-4">
       <input
-        id="file-upload"
         type="file"
-        accept=".pdf,text/plain"
+        accept="application/pdf"
         onChange={handleFileChange}
-        className="block w-full text-sm text-gray-500
-          file:mr-4 file:py-2 file:px-4
-          file:rounded file:border-0
-          file:text-sm file:font-semibold
-          file:bg-blue-50 file:text-blue-700
-          hover:file:bg-blue-100
-        "
+        disabled={uploading}
       />
-      {fileName && <p className="mt-2 text-gray-700">Selected: {fileName}</p>}
-      {error && <p className="mt-2 text-red-600">{error}</p>}
+      <button
+        onClick={handleUpload}
+        disabled={!file || uploading}
+        className="ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
+      >
+        {uploading ? "Uploading..." : "Upload PDF"}
+      </button>
+      {message && <p className="mt-2 text-sm text-gray-700">{message}</p>}
     </div>
   );
-}
+};
 
 export default FileUploader;

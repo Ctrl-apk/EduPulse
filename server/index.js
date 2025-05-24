@@ -6,6 +6,8 @@ import cors from 'cors'
 import uploadRoutes from './routes/uploadRoutes.js'
 import summaryRoutes from './routes/summaryRoute.js'
 import quizRoutes  from './routes/quizRoute.js'
+import chatbotRoutes from "./routes/chatbotRoute.js";
+
 import fs from 'fs';
 import path from 'path';
 
@@ -16,11 +18,14 @@ const app = express()
 app.use(cors());
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
+app.use("/api/chatbot", chatbotRoutes);
+
 
 ///routes
 app.use('/api/upload',uploadRoutes)
 app.use('/api/summary',summaryRoutes)
 app.use('/api/quiz',quizRoutes)
+app.use("/api/chatbot", chatbotRoutes);
 
 
 app.get('/',(req,res)=>{

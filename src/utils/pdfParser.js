@@ -1,12 +1,16 @@
 import * as pdfjsLib from 'pdfjs-dist';
-import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+import PdfWorker from '../pdfWorker.js?worker'; // a Worker class
 
 export async function extractTextFromPdf(file) {
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
+  // Create an instance of the worker and pass it explicitly
+  const loadingTask = pdfjsLib.getDocument({
+    data: arrayBuffer,
+    worker: new PdfWorker(), // ✅ correct way to use Vite worker
+  });
+
+  const pdf = await loadingTask.promise;
   let fullText = '';
 
   for (let i = 1; i <= pdf.numPages; i++) {
