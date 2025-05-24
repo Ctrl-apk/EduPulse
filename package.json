@@ -10,11 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.7",
-    "axios": "^1.9.0",
-    "cors": "^2.8.5",
-    "lucide-react": "^0.511.0",
-    "pdfjs-dist": "^3.4.120",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.0",
