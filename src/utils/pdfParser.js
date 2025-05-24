@@ -1,5 +1,12 @@
 import * as pdfjsLib from 'pdfjs-dist';
+<<<<<<< HEAD
 import PdfWorker from '../pdfWorker.js?worker'; // a Worker class
+=======
+//import workerSrc from 'pdfjs-dist/legacy/build/pdf.mjs';
+import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+>>>>>>> origin/master
 
 export async function extractTextFromPdf(file) {
   const arrayBuffer = await file.arrayBuffer();
