@@ -73,7 +73,6 @@ ${text}
 
     const data = await response.json();
 
-    // ✅ Fixed: removed duplicate "contentdata"
     const summary = data?.choices?.[0]?.message?.content || "No summary available";
 
     res.status(200).json({

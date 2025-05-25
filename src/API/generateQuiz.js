@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export async function generateQuiz(summaryText) {
   try {
-    const response = await axios.post('http://localhost:5000/api/quiz', {
+    const response = await axios.post('http://localhost:5000/api/quiz/generate', {
       summary: summaryText,
     });
 

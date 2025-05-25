@@ -1,21 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import FileUploader from "../components/FileUploader";
-
-// Helper to send text summary request (for plain text notes)
 import { summarizeText } from "../API/summarizeText";
 
+// Helper for PDF summary API call
 export async function summarizePdfFile(file) {
   const formData = new FormData();
   formData.append("pdf", file);
 
-  const res = await fetch("http://localhost:5000/api/summary", {
+  const res = await fetch("http://localhost:5000/api/summary/generate", {
     method: "POST",
     body: formData,
   });
 
-  if (!res.ok) {
-    throw new Error(`Failed to summarize PDF: ${res.statusText}`);
-  }
+  if (!res.ok) throw new Error(`Failed to summarize PDF: ${res.statusText}`);
 
   const data = await res.json();
   return data.summary;
@@ -26,52 +23,37 @@ const Home = () => {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [history, setHistory] = useState([]);
 
-  // Quiz state
   const [quiz, setQuiz] = useState([]);
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizError, setQuizError] = useState("");
 
-  useEffect(() => {
-    const savedHistory = JSON.parse(localStorage.getItem("edupulse_history")) || [];
-    setHistory(savedHistory);
-  }, []);
+  // For user quiz interaction
+  const [userAnswers, setUserAnswers] = useState({});
+  const [showFeedback, setShowFeedback] = useState({});
 
-  const saveToHistory = (noteText, summaryText) => {
-    const entry = {
-      timestamp: new Date().toISOString(),
-      note: noteText,
-      summary: summaryText,
-    };
-    const updatedHistory = [entry, ...history];
-    setHistory(updatedHistory);
-    localStorage.setItem("edupulse_history", JSON.stringify(updatedHistory));
-  };
-
-  // Handle file content coming from FileUploader component
+  // Handles file upload or text content
   const handleFileContent = async (content, file) => {
-    // content is string for text files, else file for PDF
     if (typeof content === "string") {
-      // Plain text file or text pasted
       setLectureNotes(content);
       setSummary("");
       setError("");
       setQuiz([]);
+      setUserAnswers({});
+      setShowFeedback({});
     } else if (file && file.type === "application/pdf") {
-      // PDF file uploaded - generate summary directly
       setLoading(true);
       setError("");
       setSummary("");
       setQuiz([]);
+      setUserAnswers({});
+      setShowFeedback({});
       try {
         const pdfSummary = await summarizePdfFile(file);
-        setLectureNotes(`(PDF content summarized)`);
         setSummary(pdfSummary);
-        saveToHistory("(PDF content)", pdfSummary);
+        setLectureNotes("(PDF content summarized)");
       } catch (err) {
-        console.error("PDF summary error:", err);
-        setError("Failed to summarize PDF.");
+        setError("Failed to summarize PDF: " + err.message);
       } finally {
         setLoading(false);
       }
@@ -80,45 +62,58 @@ const Home = () => {
     }
   };
 
-  // Generate summary from typed/uploaded text (not PDF)
+  // Handles summary generation from text notes
   const handleGenerateSummary = async () => {
-    if (!lectureNotes) return;
+    if (!lectureNotes) {
+      setError("Please upload or enter lecture notes first.");
+      return;
+    }
     setLoading(true);
     setError("");
     setSummary("");
     setQuiz([]);
+    setUserAnswers({});
+    setShowFeedback({});
     try {
       const result = await summarizeText(lectureNotes);
       setSummary(result);
-      saveToHistory(lectureNotes, result);
     } catch (err) {
-      console.error("Summary error:", err);
-      setError("Failed to generate summary.");
+      setError("Failed to generate summary: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Generate quiz based on current summary or lecture notes
+  // Handles quiz generation from summary or notes
   const handleGenerateQuiz = async () => {
+    if (!summary && !lectureNotes) {
+      setQuizError("Please provide summary or lecture notes first.");
+      return;
+    }
     setQuizLoading(true);
     setQuizError("");
+    setUserAnswers({});
+    setShowFeedback({});
     try {
       const res = await fetch("http://localhost:5000/api/quiz/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: summary || lectureNotes }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ summary: summary || lectureNotes }),
       });
       if (!res.ok) throw new Error("Failed to generate quiz");
       const data = await res.json();
-      setQuiz(data.questions || []);
+      setQuiz(data.quiz || []);
     } catch (err) {
-      setQuizError(err.message);
+      setQuizError("Quiz error: " + err.message);
     } finally {
       setQuizLoading(false);
     }
+  };
+
+  // Reset quiz state (optional: add a "Reset Quiz" button if you want)
+  const handleResetQuiz = () => {
+    setUserAnswers({});
+    setShowFeedback({});
   };
 
   return (
@@ -136,34 +131,39 @@ const Home = () => {
 
       <div className="mt-4 flex gap-4">
         <button
-          className={`py-2 px-4 rounded transition-colors duration-200 ${
-            lectureNotes
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "bg-gray-300 text-gray-600 cursor-not-allowed"
+          className={`py-2 px-4 rounded transition bg-blue-600 text-white hover:bg-blue-700 ${
+            loading ? "opacity-50 cursor-not-allowed" : ""
           }`}
           onClick={handleGenerateSummary}
-          disabled={!lectureNotes || loading}
+          disabled={loading}
         >
           {loading ? "Generating Summary..." : "Generate Summary"}
         </button>
 
         <button
-          className={`py-2 px-4 rounded transition-colors duration-200 ${
-            (summary || lectureNotes.length > 0)
-              ? "bg-green-600 text-white hover:bg-green-700"
-              : "bg-gray-300 text-gray-600 cursor-not-allowed"
+          className={`py-2 px-4 rounded transition bg-green-600 text-white hover:bg-green-700 ${
+            quizLoading ? "opacity-50 cursor-not-allowed" : ""
           }`}
           onClick={handleGenerateQuiz}
-          disabled={quizLoading || (!summary && !lectureNotes)}
+          disabled={quizLoading}
         >
           {quizLoading ? "Generating Quiz..." : "Generate Quiz"}
         </button>
+
+        {quiz.length > 0 && (
+          <button
+            className="py-2 px-4 rounded transition bg-yellow-600 text-white hover:bg-yellow-700"
+            onClick={handleResetQuiz}
+          >
+            Reset Quiz
+          </button>
+        )}
       </div>
 
       {summary && (
         <div className="mt-6 p-4 border rounded bg-green-50">
           <h2 className="font-semibold mb-2 text-green-700">Summary:</h2>
-          <p>{summary}</p>
+          <pre style={{ whiteSpace: "pre-wrap" }}>{summary}</pre>
         </div>
       )}
 
@@ -180,33 +180,51 @@ const Home = () => {
           <h3 className="font-semibold mb-2">Generated Quiz</h3>
           <ol className="list-decimal ml-6">
             {quiz.map((q, i) => (
-              <li key={i} className="mb-2">{q.question}</li>
+              <li key={i} className="mb-6">
+                <div className="font-semibold mb-2">{q.question}</div>
+                <ul className="list-disc ml-5">
+                  {q.options.map((opt, idx) => (
+                    <li key={idx} className="mb-1">
+                      <button
+                        className={`py-1 px-3 rounded border transition ${
+                          userAnswers[i] === opt
+                            ? userAnswers[i] === q.answer
+                              ? "bg-green-200 border-green-600"
+                              : "bg-red-200 border-red-600"
+                            : "bg-white border-gray-400 hover:bg-gray-200"
+                        }`}
+                        disabled={!!userAnswers[i]}
+                        onClick={() => {
+                          setUserAnswers({ ...userAnswers, [i]: opt });
+                          setShowFeedback({ ...showFeedback, [i]: true });
+                        }}
+                      >
+                        {opt}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                {showFeedback[i] && (
+                  <div
+                    className={`mt-2 font-semibold ${
+                      userAnswers[i] === q.answer
+                        ? "text-green-700"
+                        : "text-red-700"
+                    }`}
+                  >
+                    {userAnswers[i] === q.answer
+                      ? "Correct!"
+                      : (
+                        <>
+                          Incorrect. The correct answer is: <span className="underline">{q.answer}</span>
+                        </>
+                      )
+                    }
+                  </div>
+                )}
+              </li>
             ))}
           </ol>
-        </div>
-      )}
-
-      {history.length > 0 && (
-        <div className="mt-10">
-          <h2 className="text-xl font-semibold mb-4">Previous Summaries</h2>
-          {history.map((entry, index) => (
-            <div
-              key={index}
-              className="mb-4 p-4 border rounded bg-white shadow-sm"
-            >
-              <p className="text-gray-500 text-sm mb-2">
-                {new Date(entry.timestamp).toLocaleString()}
-              </p>
-              <div className="mb-2">
-                <strong className="block">Note:</strong>
-                <p className="whitespace-pre-wrap">{entry.note}</p>
-              </div>
-              <div>
-                <strong className="block text-green-700">Summary:</strong>
-                <p className="whitespace-pre-wrap">{entry.summary}</p>
-              </div>
-            </div>
-          ))}
         </div>
       )}
     </div>

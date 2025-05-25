@@ -1,7 +1,8 @@
 import express from 'express'
-import upload from '../middleware/uploadMiddleware.js'; // ✅ required!
 import {generateSummary} from '../controllers/summaryController.js'
+import multer from 'multer';
 const router = express.Router()
+const upload = multer({ dest: 'uploads/' }); 
 
-router.post('/',upload.single('pdf'),generateSummary)
+router.post('/generate',upload.single('pdf'),generateSummary)
 export default router

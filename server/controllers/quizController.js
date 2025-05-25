@@ -4,10 +4,13 @@ export const generateQuiz = async (req, res) => {
   const { summary } = req.body;
 
   if (!summary) {
+    console.error('❌ No summary provided in request body');
     return res.status(400).json({ error: 'Summary is required' });
   }
 
-  // Clear and detailed prompt for generating insightful quiz questions
+  console.log('✅ Received summary for quiz generation');
+  console.log('🔎 Summary preview:', summary.slice(0, 100) + '...');
+
   const prompt = `
 You are an expert quiz generator.
 
@@ -29,16 +32,17 @@ Please follow these instructions:
     "question": "Your question text here?",
     "options": ["Option A", "Option B", "Option C", "Option D"],
     "answer": "The correct option text"
-  },
-  ...
+  }
 ]
+
+IMPORTANT: Output ONLY the JSON array. Do NOT include any markdown, explanations, or extra text.
 `;
 
   try {
     const response = await axios.post(
       'https://api.perplexity.ai/chat/completions',
       {
-        model: 'sonar-pro', // or your preferred Perplexity model
+        model: 'sonar-pro',
         messages: [{ role: 'user', content: prompt }],
       },
       {
@@ -49,23 +53,40 @@ Please follow these instructions:
       }
     );
 
-    const content = response.data?.choices?.[0]?.message?.content;
+    let content = response?.data?.choices?.[0]?.message?.content;
+    console.log('🎯 Perplexity API responded with content:', content);
+
+    // Remove markdown code block wrappers if present
+    if (content && content.trim().startsWith('```')) {
+      content = content.replace(/``````/g, '').trim();
+    }
 
     let quiz;
     try {
       quiz = JSON.parse(content);
     } catch (parseError) {
-      console.warn('JSON parsing failed, attempting eval fallback:', parseError);
-      quiz = eval(content); // fallback for non-strict JSON formats
+      console.error('❌ JSON parsing failed. Content:', content);
+      return res.status(500).json({ error: 'Quiz content format is invalid', details: parseError.message });
     }
 
     if (!Array.isArray(quiz)) {
-      throw new Error('Generated quiz is not an array');
+      console.error('❌ Quiz is not an array:', quiz);
+      return res.status(500).json({ error: 'Generated quiz is not in correct format' });
     }
 
+    console.log('✅ Quiz generated successfully with', quiz.length, 'questions');
     res.status(200).json({ quiz });
+
   } catch (error) {
-    console.error('Perplexity Quiz Generation Error:', error.message || error);
+    console.error('❌ Failed to generate quiz from Perplexity API');
+
+    if (error.response) {
+      console.error('API Status:', error.response.status);
+      console.error('API Error Response:', error.response.data);
+    } else {
+      console.error('Error Message:', error.message);
+    }
+
     res.status(500).json({ error: 'Failed to generate quiz from Perplexity API' });
   }
 };

@@ -14,6 +14,7 @@ import path from 'path';
 dotenv.config()
 const app = express()
 
+
 //Middleware
 app.use(cors());
 app.use(express.json())
@@ -47,5 +48,3 @@ app.listen(PORT,()=>{
     console.log(`Server is running on http://localhost:${PORT}`)
 })
 
-
-// console.log('PERPLEXITY API:', process.env.PERPLEXITY_API_KEY);

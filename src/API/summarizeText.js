@@ -1,5 +1,5 @@
 export async function summarizeText(text) {
-  const res = await fetch("http://localhost:5000/api/summary", {
+  const res = await fetch("http://localhost:5000/api/summary/generate", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

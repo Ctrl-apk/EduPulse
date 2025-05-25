@@ -1,50 +1,20 @@
-import React, { useState } from "react";
+import React from "react";
 
-const FileUploader = ({ onUploadSuccess, onUploadError }) => {
-  const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState("");
-
+const FileUploader = ({ onFileContent }) => {
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-    setMessage("");
-  };
+    const file = e.target.files[0];
 
-  const handleUpload = async () => {
-    if (!file) {
-      setMessage("Please select a PDF file to upload.");
-      return;
-    }
+    if (!file) return;
 
-    setUploading(true);
-    setMessage("");
-
-    const formData = new FormData();
-    formData.append("pdf", file);
-
-    try {
-      const response = await fetch("http://localhost:5000/api/upload/upload-pdf", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setMessage("Upload successful!");
-
-      if (onUploadSuccess) {
-        onUploadSuccess(data);
-      }
-    } catch (error) {
-      setMessage(`Error: ${error.message}`);
-      if (onUploadError) {
-        onUploadError(error);
-      }
-    } finally {
-      setUploading(false);
+    if (file.type === "application/pdf") {
+      // Pass the file for backend summarization
+      onFileContent(null, file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        onFileContent(e.target.result, file);
+      };
+      reader.readAsText(file);
     }
   };
 
@@ -52,18 +22,10 @@ const FileUploader = ({ onUploadSuccess, onUploadError }) => {
     <div className="mb-4">
       <input
         type="file"
-        accept="application/pdf"
+        accept=".pdf,.txt"
         onChange={handleFileChange}
-        disabled={uploading}
+        className="block w-full text-sm text-gray-600"
       />
-      <button
-        onClick={handleUpload}
-        disabled={!file || uploading}
-        className="ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
-      >
-        {uploading ? "Uploading..." : "Upload PDF"}
-      </button>
-      {message && <p className="mt-2 text-sm text-gray-700">{message}</p>}
     </div>
   );
 };
