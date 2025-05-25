@@ -1,1 +1,322 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import "tailwindcss";
+
+/* Mafia Gamified Background */
+.gaming-bg {
+  min-height: 100vh;
+  position: relative;
+  color: #fff;
+  font-family: 'Montserrat', Arial, sans-serif;
+  background:
+    url("https://www.transparenttextures.com/patterns/diamond-upholstery.png") repeat,
+    linear-gradient(135deg, #18181b 0%, #22223b 60%, #1a1a2e 100%);
+  background-blend-mode: overlay;
+  box-shadow: 0 0 0 100vw rgba(0,0,0,0.55) inset;
+  overflow-x: hidden;
+}
+.gaming-bg::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  box-shadow:
+    0 0 120px 30px #00ffe7 inset,
+    0 0 160px 60px #ff00cc inset;
+  opacity: 0.12;
+}
+.gaming-bg::after {
+  content: "";
+  position: fixed;
+  left: 50vw;
+  top: 50vh;
+  width: 400px;
+  height: 400px;
+  background: url('https://cdn.pixabay.com/photo/2014/04/03/10/32/mafia-312681_1280.png') center/contain no-repeat;
+  opacity: 0.04;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Main layout */
+.ep-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  max-width: 1300px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 1100px) {
+  .ep-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Main content and sidebar */
+.ep-main {
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 700px;
+  padding: 24px 0 24px 0;
+  z-index: 1;
+}
+.ep-progress-box {
+  width: 320px;
+  background: #18191aee;
+  border: 2px solid #ffd700;
+  border-radius: 18px;
+  box-shadow: 0 0 16px #ffd700, 0 0 24px #ff00cc inset;
+  z-index: 10;
+  padding: 18px 18px 10px 18px;
+  margin-left: 36px;
+  margin-top: 32px;
+  font-family: 'Press Start 2P', cursive;
+  min-width: 220px;
+  min-height: 180px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+@media (max-width: 1100px) {
+  .ep-progress-box {
+    position: static;
+    width: 100%;
+    margin: 32px 0 0 0;
+    max-width: 100vw;
+  }
+}
+@media (max-width: 700px) {
+  .ep-main, .ep-progress-box {
+    padding: 12px 0 12px 0;
+    margin: 0;
+    max-width: 100vw;
+    border-radius: 10px;
+  }
+  .ep-title {
+    font-size: 2.1rem;
+  }
+}
+
+/* Mafia/gaming font for headings/buttons/badges */
+.gaming-title, .ep-title, .glow-btn, .badge, .level, .progress-box-gaming, .ep-progress-box {
+  font-family: 'Press Start 2P', cursive !important;
+  letter-spacing: 1.5px;
+}
+
+/* Neon/glow button */
+.glow-btn {
+  background: #1f1c2c;
+  color: #ffd700;
+  border: 2px solid #00ffe7;
+  box-shadow: 0 0 8px #00ffe7, 0 0 24px #00ffe7 inset;
+  transition: all 0.2s;
+  font-family: 'Press Start 2P', cursive;
+}
+.glow-btn:hover {
+  background: #00ffe7;
+  color: #232526;
+  box-shadow: 0 0 24px #00ffe7, 0 0 48px #00ffe7 inset;
+}
+
+/* Badges */
+.badge {
+  background: #ffd700;
+  color: #222;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.9em;
+  margin-left: 8px;
+  box-shadow: 0 2px 8px #ffd700aa;
+}
+
+/* Progress bar */
+.progress-bar {
+  background: #353535;
+  border-radius: 8px;
+  height: 12px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.progress-bar-inner {
+  background: linear-gradient(90deg, #ff00cc 0%, #00ffe7 100%);
+  height: 100%;
+  transition: width 0.4s;
+}
+
+/* Streak and level text */
+.streak {
+  color: #00ffe7;
+  text-shadow: 0 0 8px #00ffe7;
+}
+.level {
+  color: #ffd700;
+  text-shadow: 0 0 8px #ffd700;
+}
+
+/* File uploader box */
+.file-uploader-glow {
+  transition: box-shadow 0.3s, border-color 0.3s;
+  border: 2px dashed #00ffe7;
+  border-radius: 14px;
+  background: #232526cc;
+  box-shadow: 0 0 16px #00ffe7, 0 0 24px #00ffe7 inset;
+  cursor: pointer;
+  padding: 2.5rem 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  position: relative;
+}
+.file-uploader-glow:hover,
+.file-uploader-glow:focus-within {
+  box-shadow: 0 0 32px #00ffe7, 0 0 48px #00ffe7 inset;
+  border-color: #ff00cc;
+}
+
+/* Section and quiz styling */
+.ep-section {
+  margin-top: 2rem;
+  padding: 1.2rem;
+  border-radius: 14px;
+  background: #232526cc;
+  border: 1.5px solid #444;
+  margin-bottom: 1.5rem;
+}
+.ep-section-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.6rem;
+  color: #00ffe7;
+  letter-spacing: 1px;
+}
+.ep-btn-row {
+  display: flex;
+  gap: 1.1rem;
+  margin: 1.2rem 0 1rem 0;
+  flex-wrap: wrap;
+}
+.ep-btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ep-alert {
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border-radius: 10px;
+  font-weight: bold;
+}
+.ep-alert-error {
+  background: #790c0c;
+  color: #fff;
+}
+.ep-quiz-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.97rem;
+  margin-bottom: 0.7rem;
+}
+.ep-quiz-list {
+  margin-left: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.ep-quiz-item {
+  margin-bottom: 2.2rem;
+}
+.ep-quiz-options {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+.ep-quiz-btn {
+  min-width: 120px;
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+}
+.ep-correct {
+  background: #0f5132 !important;
+  border-color: #198754 !important;
+  color: #fff !important;
+}
+.ep-wrong {
+  background: #842029 !important;
+  border-color: #dc3545 !important;
+  color: #fff !important;
+}
+.ep-quiz-complete {
+  margin-top: 2.2rem;
+  padding: 1.2rem;
+  border-radius: 12px;
+  background: #1a3322;
+  text-align: center;
+  border: 1.5px solid #00ffe7;
+}
+
+/* Updated chatbot text colors for better visibility */
+.mafia-chatbot-glass {
+  background: rgba(24, 25, 27, 0.98);
+  box-shadow: 0 0 24px #00ffe7, 0 0 48px #ff00cc inset;
+  border: 2px solid #00ffe7;
+  backdrop-filter: blur(4px);
+  font-family: 'Montserrat', Arial, sans-serif;
+  color: #f5f5f5;
+}
+
+
+.mafia-chatbot-header {
+  background: linear-gradient(90deg, #18181b 0%, #232526 100%);
+  color: #ffd700;
+  font-family: 'Press Start 2P', cursive;
+  letter-spacing: 1.5px;
+  border-bottom: 2px solid #00ffe7;
+}
+
+.mafia-bubble {
+  font-family: 'Montserrat', Arial, sans-serif;
+  border: 1.5px solid transparent;
+  box-shadow: 0 2px 8px #00ffe755;
+}
+
+.mafia-user-bubble {
+  background: linear-gradient(90deg, #232526 60%, #00ffe7 100%);
+  color: #ffffff;
+  border: 1.5px solid #00ffe7;
+  text-align: right;
+}
+
+
+.mafia-bot-bubble {
+  background: linear-gradient(90deg, #fffbe6 60%, #ffe066 100%);
+  color: #222222;
+  border: 1.5px solid #ffd700;
+  text-align: left;
+}
+.mafia-chatbot-footer input {
+  background: #22223b;
+  color: #e0e0e0; /* Light text color for input */
+  border: none;
+  outline: none;
+}
+
+.mafia-chatbot-footer input::placeholder {
+  color: #a0a0a0; /* Lighter placeholder text */
+}
+
+.mafia-glow-btn {
+  background: #18181b;
+  color: #00ffe7;
+  border: 2px solid #00ffe7;
+  box-shadow: 0 0 12px #00ffe7, 0 0 24px #00ffe7 inset;
+  transition: all 0.2s;
+  font-family: 'Press Start 2P', cursive;
+}
+.mafia-glow-btn:hover {
+  background: #00ffe7;
+  color: #18181b;
+  box-shadow: 0 0 24px #00ffe7, 0 0 48px #ffd700 inset;
+}

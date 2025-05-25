@@ -6,7 +6,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([
     {
       from: "bot",
-      text: "Hi! How can I help you with your study material today?",
+      text: "🕵️‍♂️ Welcome to the Mafia Lounge. How can I assist your studies today?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -36,7 +36,6 @@ const Chatbot = () => {
 
       setMessages((prev) => [...prev, { from: "bot", text: botText }]);
     } catch (error) {
-      console.error("Error fetching bot reply:", error);
       setMessages((prev) => [
         ...prev,
         { from: "bot", text: "Oops! Something went wrong." },
@@ -47,53 +46,55 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 right-4 z-50 font-sans">
       <button
         onClick={toggleChat}
-        className="bg-blue-600 text-white rounded-full p-3 shadow-lg hover:bg-blue-700"
+        className="mafia-glow-btn rounded-full p-3 shadow-lg flex items-center justify-center"
         aria-label="Open chatbot"
       >
-        <MessageCircle />
+        <MessageCircle className="w-6 h-6" />
       </button>
 
       {isOpen && (
-        <div className="w-80 h-96 bg-white rounded-lg shadow-2xl mt-2 flex flex-col">
-          <div className="p-2 border-b font-semibold text-center bg-blue-600 text-white rounded-t">
-            EduBot
+        <div className="mafia-chatbot-glass w-80 h-96 rounded-xl shadow-2xl mt-2 flex flex-col border-2 border-[#00ffe7]">
+          <div className="flex items-center justify-center gap-2 p-2 border-b font-bold mafia-chatbot-header text-lg rounded-t">
+            <span role="img" aria-label="mafia-hat">🕵️‍♂️</span> 
+            <span>EduBot</span>
           </div>
           <div className="flex-1 p-2 overflow-y-auto text-sm">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`my-1 p-2 rounded-md max-w-[80%] ${
+                className={`my-1 max-w-[80%] px-3 py-2 rounded-xl mafia-bubble ${
                   msg.from === "user"
-                    ? "ml-auto bg-blue-100"
-                    : "mr-auto bg-gray-100"
+                    ? "ml-auto mafia-user-bubble"
+                    : "mr-auto mafia-bot-bubble"
                 }`}
               >
                 {msg.text}
               </div>
             ))}
-
             {loading && (
-              <div className="my-1 p-2 rounded-md max-w-[80%] mr-auto bg-gray-200 italic text-gray-600">
+              <div className="my-1 max-w-[80%] px-3 py-2 rounded-xl mafia-bubble mafia-bot-bubble italic">
                 EduBot is typing...
               </div>
             )}
           </div>
-          <div className="p-2 border-t flex">
+          <div className="p-2 border-t flex mafia-chatbot-footer">
             <input
-              className="flex-1 text-sm px-2 py-1 border rounded-l"
+              className="flex-1 text-sm px-2 py-1 rounded-l bg-[#22223b] text-white border-none focus:ring-2 focus:ring-[#00ffe7] outline-none font-sans"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Type a message..."
               disabled={loading}
+              style={{ fontFamily: "inherit" }}
             />
             <button
               onClick={sendMessage}
-              className="bg-blue-600 text-white px-3 rounded-r hover:bg-blue-700 disabled:bg-blue-400"
+              className="mafia-glow-btn px-4 rounded-r font-bold transition disabled:opacity-60"
               disabled={loading}
+              style={{ fontFamily: "'Press Start 2P', cursive" }}
             >
               Send
             </button>
