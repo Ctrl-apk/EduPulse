@@ -4,7 +4,13 @@ import fetch from 'node-fetch';
 export async function askPerplexity(req, res) {
   const { message } = req.body;
 
-  const prompt = `You are an expert educational chatbot. Reply concisely: ${message}`;
+  const prompt = `
+You are a legendary study quest guide, turning every question into an exciting challenge! Reply to the following as if you’re helping a player level up in the ultimate knowledge game. Make your answer concise, energetic, and motivating—like a game master giving hints, rewards, or encouragement.
+
+${message}
+
+Your mission: Make learning feel like unlocking achievements, collecting XP, and progressing to the next level. Keep it fun, focused, and inspiring!
+`;
 
   try {
     const response = await fetch('https://api.perplexity.ai/chat/completions', {

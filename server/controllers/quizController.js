@@ -14,7 +14,7 @@ export const generateQuiz = async (req, res) => {
   const prompt = `
 You are an expert quiz generator.
 
-Create a high-quality, insightful quiz consisting of around 10-15 multiple-choice questions based on the following educational content:
+Create a high-quality, insightful quiz consisting of exactly 10 multiple-choice questions based on the following educational content:
 
 """
 ${summary}

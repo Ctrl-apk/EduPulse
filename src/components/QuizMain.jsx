@@ -1,20 +1,18 @@
 import React, { useState } from "react";
 import FileUploader from "./FileUploader";
 import QuizList from "./QuizList";
+import Confetti from "react-confetti";
 import { summarizeText } from "../API/summarizeText";
 
 // Helper for PDF summary API call
 export async function summarizePdfFile(file) {
   const formData = new FormData();
   formData.append("pdf", file);
-
   const res = await fetch("http://localhost:5000/api/summary/generate", {
     method: "POST",
     body: formData,
   });
-
   if (!res.ok) throw new Error(`Failed to summarize PDF: ${res.statusText}`);
-
   const data = await res.json();
   return data.summary;
 }
@@ -26,7 +24,6 @@ const getLevel = (score) => {
   if (score >= 40) return "Quiz Novice 🎓";
   return "Beginner 🌱";
 };
-
 const getBadge = (score) => {
   if (score >= 80) return "🏅";
   if (score >= 60) return "🥈";
@@ -42,7 +39,6 @@ const QuizMain = ({ quizHistory, setQuizHistory }) => {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const [quiz, setQuiz] = useState([]);
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizError, setQuizError] = useState("");
@@ -54,6 +50,9 @@ const QuizMain = ({ quizHistory, setQuizHistory }) => {
   const [streak, setStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
   const [completed, setCompleted] = useState(false);
+
+  // Confetti state
+  const [showConfetti, setShowConfetti] = useState(false);
 
   // Handles file upload or text content
   const handleFileContent = async (content, file) => {
@@ -155,6 +154,10 @@ const QuizMain = ({ quizHistory, setQuizHistory }) => {
     // Completion check
     if (Object.keys(newUserAnswers).length === quiz.length) {
       setCompleted(true);
+      // Confetti for perfect score
+      if (newScore === quiz.length * 10) {
+        setShowConfetti(true);
+      }
       // Add to quiz history
       setQuizHistory(prev => [
         ...prev,
@@ -176,6 +179,7 @@ const QuizMain = ({ quizHistory, setQuizHistory }) => {
     setStreak(0);
     setMaxStreak(0);
     setCompleted(false);
+    setShowConfetti(false);
     handleGenerateQuiz();
   };
 
@@ -187,6 +191,7 @@ const QuizMain = ({ quizHistory, setQuizHistory }) => {
     setStreak(0);
     setMaxStreak(0);
     setCompleted(false);
+    setShowConfetti(false);
   };
 
   return (
@@ -194,7 +199,6 @@ const QuizMain = ({ quizHistory, setQuizHistory }) => {
       <h1 className="ep-title gaming-title text-4xl mb-6 text-center">
         EduPulse <span className="level">{getBadge(score)}</span>
       </h1>
-
       <FileUploader onFileContent={handleFileContent} />
 
       {lectureNotes && (
@@ -226,20 +230,7 @@ const QuizMain = ({ quizHistory, setQuizHistory }) => {
         )}
       </div>
 
-      {summary && (
-        <section className="ep-section">
-          <h2 className="ep-section-title" style={{ color: "#ff00cc" }}>Summary:</h2>
-          <pre style={{ whiteSpace: "pre-wrap" }}>{summary}</pre>
-        </section>
-      )}
-
-      {error && (
-        <div className="ep-alert ep-alert-error">{error}</div>
-      )}
-      {quizError && (
-        <div className="ep-alert ep-alert-error">{quizError}</div>
-      )}
-
+      {/* === QUIZ SECTION FIRST === */}
       {quiz.length > 0 && (
         <section className="ep-section">
           <h3 className="ep-section-title" style={{ color: "#00ffe7" }}>Generated Quiz</h3>
@@ -267,7 +258,9 @@ const QuizMain = ({ quizHistory, setQuizHistory }) => {
           {completed && (
             <div className="ep-quiz-complete">
               <h4 className="text-xl font-bold mb-2 level">Quiz Complete!</h4>
-              <div className="mb-2">Final Score: <strong>{score}</strong> {getBadge(score)}</div>
+              <div className="mb-2">
+                Final Score: <strong>{score}</strong> {getBadge(score)}
+              </div>
               <div className="mb-2">Max Streak: <strong>{maxStreak}</strong></div>
               <div className="mb-2">Level: <strong>{getLevel(score)}</strong></div>
               <div className="mb-2">
@@ -279,6 +272,9 @@ const QuizMain = ({ quizHistory, setQuizHistory }) => {
                   ? "Nice try! Practice makes perfect! 💡"
                   : "Don't give up! Try again! 💪"}
               </div>
+              {showConfetti && (
+                <Confetti width={window.innerWidth} height={window.innerHeight} />
+              )}
               <button
                 className="mt-2 py-2 px-4 rounded glow-btn"
                 onClick={handleNewQuiz}
@@ -289,6 +285,19 @@ const QuizMain = ({ quizHistory, setQuizHistory }) => {
           )}
         </section>
       )}
+
+      {/* === SUMMARY SECTION BELOW === */}
+      {summary && (
+        <section className="ep-section">
+          <h2 className="ep-section-title" style={{ color: "#ff00cc" }}>
+            Summary:
+          </h2>
+          <pre style={{ whiteSpace: "pre-wrap" }}>{summary}</pre>
+        </section>
+      )}
+
+      {error && <div className="ep-alert ep-alert-error">{error}</div>}
+      {quizError && <div className="ep-alert ep-alert-error">{quizError}</div>}
     </main>
   );
 };
